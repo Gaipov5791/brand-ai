@@ -20,7 +20,11 @@
 }
 
 body {
-  background: var(--background);
+  background: #050505;
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-geist-sans), system-ui, sans-serif;
+}
+
+html {
+  background: #050505;
 }
