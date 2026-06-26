@@ -1,7 +1,8 @@
 "use client";
 
-import { Canvas } from "@react-three/fiber";
+import { Canvas, useThree } from "@react-three/fiber";
 import { useGLTF, Center, Html } from "@react-three/drei";
+import { KTX2Loader } from "three-stdlib";
 import {
   Component,
   Suspense,
@@ -16,9 +17,25 @@ import gsap from "gsap";
 import {
   CAP_MODEL_CDN,
   CAP_MODEL_LOCAL,
-  DRACO_DECODER,
+  KTX2_BASIS_PATH,
   getCapModelUrl,
 } from "@/lib/capModel";
+
+function useCapGltf(modelUrl: string) {
+  const gl = useThree((state) => state.gl);
+
+  return useGLTF(
+    modelUrl,
+    false,
+    true,
+    (loader) => {
+      const ktx2Loader = new KTX2Loader();
+      ktx2Loader.setTranscoderPath(KTX2_BASIS_PATH);
+      ktx2Loader.detectSupport(gl);
+      loader.setKTX2Loader(ktx2Loader);
+    },
+  );
+}
 
 const DEG = Math.PI / 180;
 const FINISH_ROTATION_Y = 332 * DEG;
@@ -31,7 +48,7 @@ type CapModelProps = {
 };
 
 function CapModel({ timeline, modelUrl }: CapModelProps) {
-  const { scene } = useGLTF(modelUrl, DRACO_DECODER);
+  const { scene } = useCapGltf(modelUrl);
   const meshRef = useRef<Group>(null);
   const model = useMemo(() => scene.clone(true), [scene]);
 
@@ -155,6 +172,3 @@ export default function CapScene3D({ timeline }: { timeline: gsap.core.Timeline 
     </div>
   );
 }
-
-useGLTF.preload(getCapModelUrl(), DRACO_DECODER);
-useGLTF.preload(CAP_MODEL_CDN, DRACO_DECODER);
